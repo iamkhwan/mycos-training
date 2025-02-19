@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi-Lo Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #ffd70061;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #B8860B;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #FFF8DC;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px;
+        }
+        .dice {
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #B8860B;
+            border-radius: 10px;
+            background: #FFD700;
+            color: #333;
+            font-weight: bold;
+            transition: transform 0.5s ease-in-out;
+        }
+        .fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: none;
+            background: url('https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXJvYmZ5NTJoaXhjOXRkMHFxNjJtaWR3aGRnN2NiNXh4ejg1djZmMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/t3sZxY5zS5B0z5zMIz/giphy.gif') center/cover no-repeat;
+        }
+        .rolling {
+            animation: roll 0.5s ease-in-out;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: none;
+        }
+        input {
+            width: 80%;
+            background: #FFFACD;
+            color: #333;
+        }
+        button {
+            background: #DAA520;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #B8860B;
+        }
+        #result {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #8B4513;
+        }
+        #balance {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #006400;
+        }
+        .rules-container {
+            margin-top: 20px;
+        }
+        .rules-header {
+            background: #FFD700;
+            color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+        }
+        .rules {
+            background: #FFF8DC;
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            text-align: left;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hi-Lo Game</h1>
+        <p>Place your bet and roll the dice!</p>
+        <p id="balance">Balance: $100</p>
+        <input type="number" id="betAmount" placeholder="Enter bet amount" value="10" min="1" oninput="validateBet()">
+        <button onclick="placeBet('high')">Bet High</button>
+        <button onclick="placeBet('mid')">Bet Mid</button>
+        <button onclick="placeBet('low')">Bet Low</button>
+        <div class="dice-container">
+            <div class="dice" id="dice1">🎲</div>
+            <div class="dice" id="dice2">🎲</div>
+            <div class="dice" id="dice3">🎲</div>
+        </div>
+        <p id="result"></p>
+        <div class="fireworks" id="fireworks"></div>
+        <div class="rules-container">
+            <div class="rules-header" onclick="toggleRules()">Game Rules (Click to Expand)</div>
+            <div class="rules" id="rules">
+                <h2>Game Rules:</h2>
+                <ul>
+                    <li>Place a bet before rolling the dice.</li>
+                    <li>You can bet on High, Mid, or Low.</li>
+                    <li>High wins if the sum of the dice is 12 or more.</li>
+                    <li>Mid wins if the sum is exactly 11 (payout 5x).</li>
+                    <li>Low wins if the sum is 10 or less.</li>
+                    <li>Good luck and have fun!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentBet = null;
+        let betAmount = 0;
+        let balance = 100;
+
+        function validateBet() {
+            let betInput = document.getElementById('betAmount');
+            if (parseInt(betInput.value) > balance) {
+                betInput.value = balance;
+                alert("แหน่ะ มีเงินไม่พอแล้ว");
+            }
+        }
+
+        function placeBet(type) {
+            betAmount = parseInt(document.getElementById('betAmount').value);
+            if (isNaN(betAmount) || betAmount <= 0) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+            if (betAmount > balance) {
+                alert("แหน่ะ เงินหมดไปทำงานได้แล้ว!");
+                return;
+            }
+            currentBet = type;
+            balance -= betAmount;
+            updateBalance();
+            rollDice();
+        }
+
+        function showFireworks() {
+            let fireworks = document.getElementById('fireworks');
+            fireworks.style.display = 'block';
+            setTimeout(() => { fireworks.style.display = 'none'; }, 3000);
+        }
+
+        function rollDice() {
+            if (!currentBet) {
+                alert("Please place a bet first.");
+                return;
+            }
+            let diceElements = [document.getElementById('dice1'), document.getElementById('dice2'), document.getElementById('dice3')];
+            diceElements.forEach(dice => dice.classList.add('rolling'));
+            
+            setTimeout(() => {
+                let dice1 = Math.floor(Math.random() * 6) + 1;
+                let dice2 = Math.floor(Math.random() * 6) + 1;
+                let dice3 = Math.floor(Math.random() * 6) + 1;
+                let sum = dice1 + dice2 + dice3;
+                
+                diceElements[0].textContent = dice1;
+                diceElements[1].textContent = dice2;
+                diceElements[2].textContent = dice3;
+                diceElements.forEach(dice => dice.classList.remove('rolling'));
+                
+                evaluateResult(sum);
+            }, 500);
+        }
+
+        function evaluateResult(sum) {
+            let message = `You rolled ${sum}. `;
+            let winnings = 0;
+
+            if (currentBet === 'high' && sum >= 12) {
+                winnings = betAmount * 2;
+                message += `You won! Payout: $${winnings}`;
+                showFireworks();
+            } else if (currentBet === 'mid' && sum === 11) {
+                winnings = betAmount * 5;
+                message += `You won big! Payout: $${winnings}`;
+                showFireworks();
+            } else if (currentBet === 'low' && sum <= 10) {
+                winnings = betAmount * 2;
+                message += `You won! Payout: $${winnings}`;
+                showFireworks();
+            } else {
+                message += "You lost. Try again!";
+            }
+
+            balance += winnings;
+            updateBalance();
+            document.getElementById('result').textContent = message;
+            currentBet = null;
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = `Balance: $${balance}`;
+        }
+
+        function toggleRules() {
+            let rules = document.getElementById("rules");
+            rules.style.display = rules.style.display === "none" || rules.style.display === "" ? "block" : "none";
+        }
+    </script>
+</body>
+</html>
